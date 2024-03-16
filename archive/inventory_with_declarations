@@ -1,0 +1,7 @@
+# variables in playbook are resolved by distribution as below:
+# ip.add.re.ss apache_package=apache2 php_package=libapache2-mod-php
+# ip.cen.to.s apache_package=httpd php_package=php
+
+194.164.207.50 apache_package=apache2 php_package=libapache2-mod-php
+45.147.230.158 apache_package=httpd php_package=php
+

@@ -1,0 +1,19 @@
+---
+# RUN WITH:
+# ansible-playbook --ask-become-pass install_apache.yml
+# variables must be added to inventory in the following manner:
+# ip.add.re.ss apache_package=apache2 php_package=libapache2-mod-php
+# ip.cen.to.s apache_package=httpd php_package=php
+
+- hosts: all
+  become: true
+  tasks:
+    
+    - name: install apache and php 
+      # package ans univ pack vs apt/dnf allows universal
+      package:
+        name:
+          - "{{ apache_package }}"
+          - "{{ php_package }}" 
+        state: latest
+        update_cache: yes
