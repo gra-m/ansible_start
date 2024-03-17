@@ -1,23 +1,20 @@
 ---
-# RUN WITH:
-# ansible-playbook --ask-become-pass install_apache.yml
-
 - hosts: all
   become: true
   pre_tasks:
- 
-  - name: install updates (CentOS)
+
+  - name: install updates (CentOS) not reported as change
+    tags: always,dnf,noreport
     when: ansible_distribution == "CentOS"
-    tags: always,dnf
+    changed_when: false
     dnf:
-      update_only: yes
       update_cache: yes
  
-  - name: install updates (Ubuntu)
+  - name: install updates (Ubuntu) not reported as change
+    tags: always,apt,noreport
     when: ansible_distribution == "Ubuntu"
-    tags: always,apt
+    changed_when: false
     apt:
-      upgrade: dist
       update_cache: yes
 
 
@@ -25,27 +22,15 @@
   become: true
   tasks:
 
-  - name: create ansible background root user
-    tags: always,setup,anxi
-    user:
-      name: anxi
-      groups: root
-
   - name: add ssh key for ansible user anxi
     tags: always,setup,anxi
     authorized_key:
       user: anxi
+        #state: absent use this to remove e.g after setup
+        #think about securing so this key is only useable from bastionip
       key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKJdBveDR97ym1nrefdaNU/+3/ysWpULhdwBdJLcuCou ansible"
 
-  - name: add sudoers file for anxi
-    tags: always,setup,anxi,sudo
-    copy:
-      src: sudoer_anxi
-      dest: /etc/sudoers.d/anxi
-      owner: root
-      group: root
- 
- 
+
 - hosts: WEB_SERVERS 
   become: true
   tasks:

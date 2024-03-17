@@ -1,0 +1,46 @@
+---
+# RUN WITH:
+# ansible-playbook --ask-become-pass bootstrap.yml
+
+- hosts: all
+  become: true
+  pre_tasks:
+ 
+  - name: install updates (CentOS)
+    when: ansible_distribution == "CentOS"
+    tags: always,dnf
+    dnf:
+      update_cache: yes
+      update_only: yes
+
+  - name: install updates (Ubuntu)
+    when: ansible_distribution == "Ubuntu"
+    tags: always,apt
+    apt:
+      update_cache: yes
+      upgrade: dist
+
+- hosts: all
+  become: true
+  tasks:
+
+  - name: create ansible background root user
+    tags: always,setup,anxi
+    user:
+      name: anxi
+      groups: root
+
+  - name: add ssh key for ansible user anxi
+    tags: always,setup,anxi
+    authorized_key:
+      user: anxi
+      key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKJdBveDR97ym1nrefdaNU/+3/ysWpULhdwBdJLcuCou ansible"
+
+  - name: add sudoers file for anxi
+    tags: always,setup,anxi,sudo
+    copy:
+      src: sudoer_anxi
+      dest: /etc/sudoers.d/anxi
+      owner: root
+      group: root
+      mode: 0440
