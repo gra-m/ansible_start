@@ -4,6 +4,11 @@
 autocmd FileType yaml setlocal ts=2 sts=2 sw=2 expandtab
 let g:indentLine_char = '⦙'
 
+# this is not vim but great thank you very much
+vmap <C-c> "*y     " Yank current selection into system clipboard
+nmap <C-c> "*Y     " Yank current line into system clipboard (if nothing is selected)
+nmap <C-v> "*p     " Paste from system clipboard
+
 " the following is from here: https://gist.github.com/simonista/8703722
 
 " Don't try to be vi compatible
