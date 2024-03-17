@@ -1,2 +1,15 @@
 ---
 # tasks file for db_servers
+- name: install db  package (CentOS)
+  when: ansible_distribution == "CentOS"
+  tags: mariadb,centos,db,dnf 
+  dnf:
+    name: mariadb
+    state: latest
+
+- name: install db package (Ubuntu)
+  when: ansible_distribution == "Ubuntu"
+  tags: mariadb-server,mariadb,ubuntu 
+  apt:
+    name: mariadb-server
+    state: latest

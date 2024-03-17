@@ -1,2 +1,8 @@
 ---
 # tasks file for base
+- name: add ssh key for ansible user anxi
+  tags: ssh,base,anxi,pubkey,authorized_key
+  authorized_key:
+    user: anxi
+    #state: absent # use this to remove e.g after setup
+    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKJdBveDR97ym1nrefdaNU/+3/ysWpULh    dwBdJLcuCou ansible"
