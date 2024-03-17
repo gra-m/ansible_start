@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: ALL 
   become: true
   pre_tasks:
 
@@ -18,126 +18,27 @@
       update_cache: yes
 
 
-- hosts: all
+- hosts: ALL 
   become: true
-  tasks:
+  roles:
+    - base
 
-  - name: add ssh key for ansible user anxi
-    tags: always,setup,anxi
-    authorized_key:
-      user: anxi
-        #state: absent use this to remove e.g after setup
-        #think about securing so this key is only useable from bastionip
-      key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKJdBveDR97ym1nrefdaNU/+3/ysWpULhdwBdJLcuCou ansible"
-
-
+ - hosts: WORKSTATIONS
+  become: true
+  roles:
+    - workstations
+ 
 - hosts: WEB_SERVERS 
   become: true
-  tasks:
- 
-  - name: install apache and php for Ubuntu servers
-    when: ansible_distribution == "Ubuntu"
-    tags: apache,apache2,ubuntu,apt 
-    apt:
-      name:
-        - apache2
-        - libapache2-mod-php
-      state: latest
- 
-  - name: install apache and php for CentOS servers
-    when: ansible_distribution == "CentOS"
-    tags: apache,httpd,centos,dnf 
-    dnf:
-      name:
-        - httpd
-        - php
-      state: latest
-      
-  - name: start and enable httpd (apache) on CentOS systems
-    when: ansible_distribution == "CentOS"
-    tags: apache,centos,httpd,service
-    service:
-      name: httpd
-      state: started
-      enabled: yes
-
-# recognise file, lineinfile via regex pdate, if var (so config file changed)
-# restart service
-  - name: change email address for sysadmin in apache/httpd config
-    when: ansible_distribution == "CentOS"
-    tags: apache,centos,httpd,lineinfile,regexp,line,path,register
-    register: httpd_variable
-    lineinfile:
-      path: /etc/httpd/conf/httpd.conf
-      regexp: '^ServerAdmin'
-      line: ServerAdmin somebody@justhadthisupdatedviaansible.net
-        #NOTE change state 'changed' can be overwritten with a non-action play
-        #that involves that variable again, so best to use separate vars for
-        #each?
-  - name: restart httpd (CentOS)
-    when: httpd_variable.changed
-    tags: apache,centos,httpd,service,changed,state
-    service:
-      name: httpd
-      state: restarted
-    
-
-### COPY directory of ansibleBaseDirectory/files is assumed
-  - name: copy default html file for site
-    tags: apache,apache2,httpd,copy
-    copy:
-      src: default_site.html
-      dest: /var/www/html/index.html
-      owner: root
-      group: root
-      mode: 0644
-        # Owner read/write Group read Other read
-
-### install a package, use it and set ownership 
-- hosts: WORKSTATIONS
-  tags: unarchive,remote_src,package
-  become: true
-  tasks:
-
-  - name: install unzip
-    package:
-      name: unzip
-
-  - name: install terraform
-    unarchive:
-      src: https://releases.hashicorp.com/terraform/1.7.5/terraform_1.7.5_linux_amd64.zip
-      dest: /usr/local/bin
-      remote_src: yes
-      mode: 0755
-      owner: root
-      group: root
-
+  roles:
+    - web_servers
 
 - hosts: DB_SERVERS 
   become: true
-  tasks:
+  roles:
+    - db_servers
   
-  - name: install db  package (CentOS)
-    when: ansible_distribution == "CentOS"
-    tags: mariadb,centos,db,dnf 
-    dnf:
-      name: mariadb
-      state: latest
-
-  - name: install db package (Ubuntu)
-    when: ansible_distribution == "Ubuntu"
-    tags: mariadb-server,mariadb,ubuntu 
-    apt:
-      name: mariadb-server
-      state: latest
-
 - hosts: FILE_SERVERS 
   become: true
-  tasks:
-  
-  - name: install samba package 
-    tags: always,samba
-    package:
-      name: samba 
-      state: latest
-
+  roles:
+    - file_servers
