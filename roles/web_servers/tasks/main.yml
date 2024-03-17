@@ -1,34 +1,22 @@
 ---
 # tasks file for web_servers
  
-- name: install apache and php for Ubuntu servers
-  when: ansible_distribution == "Ubuntu"
-  tags: apache,apache2,ubuntu,apt 
-  apt:
+- name: install apache and php for Ubuntu and Centos servers
+  tags: apache,apache2,package,variables
+  package:
     name:
-      - apache2
-      - libapache2-mod-php
+      - "{{ apache_package_name }}"
+      - "{{ php_package_name}}"
     state: latest
  
-- name: install apache and php for CentOS servers
-  when: ansible_distribution == "CentOS"
-  tags: apache,httpd,centos,dnf 
-  dnf:
-    name:
-      - httpd
-      - php
-    state: latest
-      
 - name: start and enable httpd (apache) on CentOS systems
   when: ansible_distribution == "CentOS"
   tags: apache,centos,httpd,service
   service:
-    name: httpd
+    name: "{{ apache_service }}"
     state: started
     enabled: yes
 
-# recognise file, lineinfile via regex pdate, if var (so config file changed)
-# restart service
 - name: change email address for sysadmin in apache/httpd config
   when: ansible_distribution == "CentOS"
   tags: apache,centos,httpd,lineinfile,regexp,line,path,register
@@ -37,18 +25,14 @@
     path: /etc/httpd/conf/httpd.conf
     regexp: '^ServerAdmin'
     line: ServerAdmin somebody@justhadthisupdatedviaansible.net
-#NOTE change state 'changed' can be overwritten with a non-action play
-#that involves that variable again, so best to use separate vars for
-        #each?
+      
 - name: restart httpd (CentOS)
   when: httpd_variable.changed
   tags: apache,centos,httpd,service,changed,state
   service:
-    name: httpd
+    name: " {{ apache_service }} "
     state: restarted
     
-
-### COPY directory of ansibleBaseDirectory/files is assumed
 - name: copy default html file for site
   tags: apache,apache2,httpd,copy,files,html,index,mode,group,owner,dest
   copy:
@@ -57,4 +41,3 @@
     owner: root
     group: root
     mode: 0644
-# Owner read/write Group read Other read
