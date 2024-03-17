@@ -8,14 +8,14 @@
  
   - name: install updates (CentOS)
     when: ansible_distribution == "CentOS"
-    tags: always
+    tags: always,dnf
     dnf:
       update_only: yes
       update_cache: yes
  
   - name: install updates (Ubuntu)
     when: ansible_distribution == "Ubuntu"
-    tags: always
+    tags: always,apt
     apt:
       upgrade: dist
       update_cache: yes
@@ -27,7 +27,7 @@
  
   - name: install apache and php for Ubuntu servers
     when: ansible_distribution == "Ubuntu"
-    tags: apache,apache2,ubuntu 
+    tags: apache,apache2,ubuntu,apt 
     apt:
       name:
         - apache2
@@ -36,7 +36,7 @@
  
   - name: install apache and php for CentOS servers
     when: ansible_distribution == "CentOS"
-    tags: apache,httpd,centos 
+    tags: apache,httpd,centos,dnf 
     dnf:
       name:
         - httpd
@@ -45,15 +45,36 @@
       
   - name: start and enable httpd (apache) on CentOS systems
     when: ansible_distribution == "CentOS"
-    tags: apache,centos,httpd
+    tags: apache,centos,httpd,service
     service:
       name: httpd
       state: started
       enabled: yes
 
+# recognise file, lineinfile via regex pdate, if var (so config file changed)
+# restart service
+  - name: change email address for sysadmin in apache/httpd config
+    when: ansible_distribution == "CentOS"
+    tags: apache,centos,httpd,lineinfile,regexp,line,path,register
+    register: httpd_variable
+    lineinfile:
+      path: /etc/httpd/conf/httpd.conf
+      regexp: '^ServerAdmin'
+      line: ServerAdmin somebody@justhadthisupdatedviaansible.net
+        #NOTE change state 'changed' can be overwritten with a non-action play
+        #that involves that variable again, so best to use separate vars for
+        #each?
+  - name: restart httpd (CentOS)
+    when: httpd_variable.changed
+    tags: apache,centos,httpd,service,changed,state
+    service:
+      name: httpd
+      state: restarted
+    
+
 ### COPY directory of ansibleBaseDirectory/files is assumed
   - name: copy default html file for site
-    tags: apache,apache2,httpd 
+    tags: apache,apache2,httpd,copy
     copy:
       src: default_site.html
       dest: /var/www/html/index.html
@@ -62,8 +83,9 @@
       mode: 0644
         # Owner read/write Group read Other read
 
-### TERRAFORM / WORKSTATIONS
-- hosts: WORKSTATIONS 
+### install a package, use it and set ownership 
+- hosts: WORKSTATIONS
+  tags: unarchive,remote_src,package
   become: true
   tasks:
 
@@ -87,7 +109,7 @@
   
   - name: install db  package (CentOS)
     when: ansible_distribution == "CentOS"
-    tags: mariadb,centos,db 
+    tags: mariadb,centos,db,dnf 
     dnf:
       name: mariadb
       state: latest
@@ -104,7 +126,7 @@
   tasks:
   
   - name: install samba package 
-    tags: samba
+    tags: always,samba
     package:
       name: samba 
       state: latest
