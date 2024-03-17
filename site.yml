@@ -43,6 +43,20 @@
       state: latest
     when: ansible_distribution == "CentOS"
 
+### COPY directory of ansibleBaseDirectory/files is assumed
+  - name: copy default html file for site
+    tags: apache,apache2,httpd 
+    copy:
+      src: default_site.html
+      dest: /var/www/html/index.html
+      owner: root
+      group: root
+      mode: 0644
+        # Owner read/write Group read Other read
+
+
+
+
 - hosts: DB_SERVERS 
   become: true
   tasks:
