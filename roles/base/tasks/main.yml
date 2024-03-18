@@ -5,4 +5,14 @@
   authorized_key:
     user: anxi
     #state: absent # use this to remove e.g after setup
-    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKJdBveDR97ym1nrefdaNU/+3/ysWpULh    dwBdJLcuCou ansible"
+    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKJdBveDR97ym1nrefdaNU/+3/ysWpULhdwBdJLcuCou ansible"
+
+- name: generate sshd_config file from local template
+  tags: ssh,src,dest,owner,group,mode,notify,template
+  template:
+    src: "{{ ssh_template_file }}"
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart_sshd

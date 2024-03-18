@@ -1,12 +1,12 @@
 ---
-- hosts: ALL 
+- hosts: all 
   become: true
   pre_tasks:
 
   - name: install updates (CentOS) not reported as change
     tags: always,dnf,noreport
     when: ansible_distribution == "CentOS"
-    changed_when: false
+    changed_when: false # stops this being reported as change
     dnf:
       update_cache: yes
  
@@ -18,7 +18,7 @@
       update_cache: yes
 
 
-- hosts: ALL 
+- hosts: all 
   become: true
   roles:
     - base

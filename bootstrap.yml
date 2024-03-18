@@ -1,6 +1,9 @@
 ---
 # RUN WITH:
 # ansible-playbook --ask-become-pass bootstrap.yml
+# an inventory file 'hosts' with the IP of the server to be bootstrapped
+# a user matching the name of the user that you are using on the local machine
+# running this bootstrap ON the server with password ready to go
 
 - hosts: all
   become: true
