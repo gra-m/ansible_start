@@ -20,19 +20,12 @@
 - name: change email address for sysadmin in apache/httpd config
   when: ansible_distribution == "CentOS"
   tags: apache,centos,httpd,lineinfile,regexp,line,path,register
-  register: httpd_variable
+  notify: restart_apache
   lineinfile:
     path: /etc/httpd/conf/httpd.conf
     regexp: '^ServerAdmin'
-    line: ServerAdmin somebody@justhadthisupdatedviaansible.net
-      
-- name: restart httpd (CentOS)
-  when: httpd_variable.changed
-  tags: apache,centos,httpd,service,changed,state
-  service:
-    name: " {{ apache_service }} "
-    state: restarted
-    
+    line: ServerAdmin somebody@justhadthisupdatedviaansible.com
+
 - name: copy default html file for site
   tags: apache,apache2,httpd,copy,files,html,index,mode,group,owner,dest
   copy:
